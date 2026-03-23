@@ -1,0 +1,15 @@
+# Папка сборки
+build/
+# Объектные файлы
+*.o
+*.obj
+# Статические библиотеки
+*.a
+*.lib
+# Исполняемые файлы
+hello_world
+# Файлы CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
