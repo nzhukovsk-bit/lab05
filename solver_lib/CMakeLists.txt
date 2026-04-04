@@ -10,7 +10,9 @@ target_include_directories(solver_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Подключаем математическую библиотеку (для sqrtf)
-target_link_libraries(solver_lib
-    m
-)
+# Подключаем математическую библиотеку только для UNIX-систем (Linux, macOS)
+if(UNIX)
+    target_link_libraries(solver_lib
+        m
+    )
+endif()
