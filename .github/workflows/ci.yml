@@ -7,59 +7,55 @@ on:
     branches: [ main ]
 
 jobs:
-  build-linux-gcc:
-    runs-on: ubuntu-latest
-    name: Linux (gcc)
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_CXX_COMPILER=g++
-      
-      - name: Build
-        run: cmake --build build
-      
-      - name: Run hello_world
-        run: ./build/hello_world
-      
-      - name: Run solver
-        run: ./build/solver
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: g++
+            compiler_c: gcc
+            name: Linux (gcc)
+            build_dir: build
+            exe_suffix: ""
+          
+          - os: ubuntu-latest
+            compiler: clang++
+            compiler_c: clang
+            name: Linux (clang)
+            build_dir: build
+            exe_suffix: ""
+            install_cmd: sudo apt-get update && sudo apt-get install -y clang
+          
+          - os: windows-latest
+            compiler: cl.exe
+            name: Windows (MSVC)
+            build_dir: build/Release
+            exe_suffix: .exe
 
-  build-linux-clang:
-    runs-on: ubuntu-latest
-    name: Linux (clang)
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+    
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install clang
-        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Install compiler dependencies
+        if: matrix.install_cmd != ''
+        run: ${{ matrix.install_cmd }}
       
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_CXX_COMPILER=clang++
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cmake -B build
+          else
+            cmake -B build -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          fi
+        shell: bash
       
       - name: Build
-        run: cmake --build build
+        run: cmake --build build ${{ runner.os == 'Windows' && '--config Release' || '' }}
       
       - name: Run hello_world
-        run: ./build/hello_world
+        run: ./${{ matrix.build_dir }}/hello_world${{ matrix.exe_suffix }}
       
       - name: Run solver
-        run: ./build/solver
-
-  build-windows:
-    runs-on: windows-latest
-    name: Windows (MSVC)
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Configure CMake
-        run: cmake -B build
-      
-      - name: Build
-        run: cmake --build build --config Release
-      
-      - name: Run hello_world
-        run: ./build/Release/hello_world.exe
-      
-      - name: Run solver
-        run: ./build/Release/solver.exe
+        run: ./${{ matrix.build_dir }}/solver${{ matrix.exe_suffix }}
