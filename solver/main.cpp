@@ -1,6 +1,7 @@
 #include "formatter_ex.h"
 #include "solver.h"
 #include <iostream>
+#include <string>
 
 int main() {
     float a, b, c;
