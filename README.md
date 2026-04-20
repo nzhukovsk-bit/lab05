@@ -36,3 +36,16 @@ make coverage
 ## Author
 
 nzhukovsk-bit
+
+## Code Coverage
+
+| File | Coverage |
+|------|----------|
+| Account.cpp | 100% ✅ |
+| Transaction.cpp | 100% ✅ |
+| **Total** | **100%** ✅ |
+
+### Test Results
+- **16/16 tests passed** ✅
+- Lines coverage: 44/44 (100%)
+- Functions coverage: 14/14 (100%)
