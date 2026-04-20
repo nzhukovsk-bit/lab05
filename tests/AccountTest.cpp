@@ -1,5 +1,6 @@
 #include "banking/Account.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 using namespace banking;
 

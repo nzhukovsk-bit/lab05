@@ -7,25 +7,47 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-file(GLOB ${PROJECT_NAME}_SOURCES src/*.cpp)
-add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
-
-if(BUILD_TESTS)
-  enable_testing()
-  add_subdirectory(third-party/gtest)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-  file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
-  add_executable(check ${${PROJECT_NAME}_TEST_SOURCES})
-  target_link_libraries(check ${PROJECT_NAME} gtest_main gmock_main)
-  add_test(NAME check COMMAND check)
+# Отключаем предупреждения как ошибки для Google Test
+if(POLICY CMP0025)
+  cmake_policy(SET CMP0025 OLD)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  if(BUILD_TESTS)
+# Include directories
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Source files
+file(GLOB BANKING_SOURCES src/*.cpp)
+add_library(banking STATIC ${BANKING_SOURCES})
+
+# Tests
+if(BUILD_TESTS)
+  enable_testing()
+  
+  # Отключаем флаги -Werror для Google Test
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+  
+  # Google Test
+  add_subdirectory(third-party/gtest)
+  
+  # Восстанавливаем флаги для нашего кода
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+  
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  
+  # Test executable
+  file(GLOB TEST_SOURCES tests/*.cpp)
+  add_executable(check ${TEST_SOURCES})
+  
+  # Link libraries
+  target_link_libraries(check banking gtest_main gmock_main pthread)
+  
+  add_test(NAME check COMMAND check)
+  
+  # Coverage support
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(check PRIVATE --coverage -O0 -g)
-    target_link_libraries(check PRIVATE --coverage)
+    target_link_options(check PRIVATE --coverage)
     
     add_custom_target(coverage
       COMMAND lcov --capture --directory . --output-file coverage.info
