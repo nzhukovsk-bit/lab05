@@ -2,12 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ master, main ]
-
-env:
-  BUILD_TYPE: Release
+    branches: [ main, master ]
 
 jobs:
   build:
@@ -19,41 +16,25 @@ jobs:
         submodules: recursive
     
     - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y lcov
+      run: sudo apt-get install -y lcov
     
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTS=ON
+      run: cmake -B _build -DBUILD_TESTS=ON
     
     - name: Build
-      run: cmake --build ${{github.workspace}}/_build --config ${{env.BUILD_TYPE}}
+      run: cmake --build _build
     
     - name: Test
-      run: |
-        cd ${{github.workspace}}/_build
-        ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+      run: ./_build/check
     
-    - name: Generate coverage report
+    - name: Generate coverage
       run: |
-        cd ${{github.workspace}}/_build
-        cmake --build . --target coverage
-      shell: bash
+        cd _build
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' '*/third-party/*' --output-file coverage.info
     
-    - name: Upload coverage to Coveralls
+    - name: Upload to Coveralls
       uses: coverallsapp/github-action@v1.1.2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ${{github.workspace}}/_build/coverage.info
-        flag-name: ubuntu-latest
-        parallel: true
-
-  coveralls_finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@v1.1.2
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        parallel-finished: true
+        path-to-lcov: _build/coverage.info
