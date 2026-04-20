@@ -16,10 +16,12 @@ jobs:
         submodules: recursive
     
     - name: Install dependencies
-      run: sudo apt-get install -y lcov
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lcov
     
     - name: Configure CMake
-      run: cmake -B _build -DBUILD_TESTS=ON
+      run: cmake -B _build -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
     
     - name: Build
       run: cmake --build _build
@@ -30,11 +32,25 @@ jobs:
     - name: Generate coverage
       run: |
         cd _build
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' '*/third-party/*' --output-file coverage.info
+        # Используем флаги для игнорирования ошибок
+        lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch --rc lcov_branch_coverage=0
+        lcov --remove coverage.info '/usr/*' '*/third-party/*' '*/tests/*' --output-file coverage.info --ignore-errors unused
+        lcov --list coverage.info
     
     - name: Upload to Coveralls
       uses: coverallsapp/github-action@v1.1.2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: _build/coverage.info
+        flag-name: ubuntu-latest
+        parallel: true
+
+  coveralls_finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v1.1.2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: true
