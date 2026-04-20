@@ -72,3 +72,14 @@ TEST_F(AccountTest, TransactionHistoryAfterMultipleTransfers) {
     EXPECT_DOUBLE_EQ(history[0]->getAmount(), 200.0);
     EXPECT_DOUBLE_EQ(history[1]->getAmount(), 150.0);
 }
+
+TEST_F(AccountTest, WithdrawExactAmount) {
+    EXPECT_TRUE(account1->withdraw(1000.0));
+    EXPECT_DOUBLE_EQ(account1->getBalance(), 0.0);
+}
+
+TEST_F(AccountTest, TransferWithInsufficientFunds) {
+    EXPECT_FALSE(account1->transfer(*account2, 1500.0));
+    EXPECT_DOUBLE_EQ(account1->getBalance(), 1000.0);
+    EXPECT_DOUBLE_EQ(account2->getBalance(), 500.0);
+}

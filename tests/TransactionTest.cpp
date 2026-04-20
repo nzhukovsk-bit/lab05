@@ -38,3 +38,9 @@ TEST_F(TransactionTest, MultipleExecutions) {
     transaction->execute();
     EXPECT_TRUE(transaction->isExecuted());
 }
+
+TEST_F(TransactionTest, GetAmountAfterExecution) {
+    EXPECT_DOUBLE_EQ(transaction->getAmount(), 100.0);
+    transaction->execute();
+    EXPECT_DOUBLE_EQ(transaction->getAmount(), 100.0);
+}
