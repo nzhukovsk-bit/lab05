@@ -1,17 +1,27 @@
-# Папка сборки
+# Build directories
+_build/
 build/
-# Объектные файлы
+cmake-build-*/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage.info
+coverage_report/
+*.gcda
+*.gcno
+*.gcov
+
+# Compiled files
 *.o
-*.obj
-# Статические библиотеки
 *.a
-*.lib
-# Исполняемые файлы
-hello_world
-# Файлы CMake
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile
-*.save
-nano.*.save
+*.so
+*.exe
